@@ -12,6 +12,7 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using WebClient.Abstractions;
 using WebClient.Services;
+using AutoMapper;
 
 namespace WebClient
 {
@@ -34,6 +35,7 @@ namespace WebClient
             builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             builder.Services.AddHttpClient<IMemberDataService, MemberDataService>(client => client.BaseAddress = new Uri("https://localhost:5001/api/"));
+            builder.Services.AddHttpClient<ITaskDataService, TaskDataService>(client => client.BaseAddress = new Uri("https://localhost:5001/api/"));
 
             var host = builder.Build();
 

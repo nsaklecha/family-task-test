@@ -1,11 +1,14 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 public class FamilyMember
 {
-    public Guid id {get; set;}
+    public Guid id { get; set; }
     public string firstname { get; set; }
     public string lastname { get; set; }
     public string email { get; set; }
     public string role { get; set; }
     public string avtar { get; set; }
+    //public ICollection<TaskModel> tasks {get;set;}
 }

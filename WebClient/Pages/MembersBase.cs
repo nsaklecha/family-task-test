@@ -88,8 +88,6 @@ namespace WebClient.Pages
                     label = result.Payload.FirstName,
                     referenceId = result.Payload.Id
                 });
-
-
                 showCreator = false;
                 StateHasChanged();
             }

@@ -6,4 +6,5 @@ public class TaskModel
     public FamilyMember member { get; set; }
     public string text { get; set; }
     public bool isDone { get; set; }
+    public Guid? assignedToId { get; set; }
 }
