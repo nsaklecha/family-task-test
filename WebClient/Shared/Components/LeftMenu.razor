@@ -1,5 +1,6 @@
 
 @namespace FamilyTask.Shared.Components
+
 <style>
     .menu-wrapper {
         background: #FBFBFB;
@@ -67,8 +68,7 @@
     {
         @foreach (var item in MenuItems)
         {
-
-            <div dropzone="move" @ondrop="OnDrop" ondragover="event.preventDefault();" class="menu-item col-10 offset-1 p-3 my-4 p-sm-2 @(item.isActive ? "active" : "")" @onclick="@(e => item.InvokClickCallback(item))">
+            <div dropzone="move" @ondrop="@(()=>OnDrop.InvokeAsync(item))" ondragover="event.preventDefault();" class="menu-item col-10 offset-1 p-3 my-4 p-sm-2 @(item.isActive ? "active" : "")" @onclick="@(e => item.InvokClickCallback(item))">
                 @if (item.iconColor != null)
                 {
                     <div class="avtar mr-3" style="background-color: @(item.iconColor);"> </div>
@@ -90,8 +90,5 @@
 
     [Parameter] public EventCallback OnAddItem {get; set;}
 
-    public void OnDrop(DragEventArgs dragEventArgs)
-    {
-        DragState = "item dropped";
-    }
+    [Parameter] public EventCallback<MenuItem> OnDrop { get; set; }
 }

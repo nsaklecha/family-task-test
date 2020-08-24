@@ -12,7 +12,7 @@
 {
     <div class="page-wrapper row m-0 col-12 p-0">
         <div class="col-4 p-0">
-            <LeftMenu MenuItems="@leftMenuItem" OnAddItem="@onAddItem" />
+            <LeftMenu MenuItems="@leftMenuItem" OnAddItem="@onAddItem" OnDrop="@(e => onDrop(e))" />
         </div>
         <div class="col-8 p-0">
             @if (showLister)
@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div class="col-10 offset-1">
-                    <TaskListerComponent Tasks="@tasksToShow" />
+                    <TaskListerComponent Tasks="@tasksToShow" OnDrag="@(e => onDrag(e))" />
                 </div>
             }
             @if (showCreator)

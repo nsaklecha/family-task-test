@@ -51,10 +51,9 @@ namespace WebApi.Controllers
 
             return Ok(result);
         }
-
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Update(Guid id, UpdateTaskCommand command)
+        public async Task<IActionResult> Update([FromRoute]Guid id, [FromBody] UpdateTaskCommand command)
         {
             if (!ModelState.IsValid)
             {
@@ -73,5 +72,46 @@ namespace WebApi.Controllers
             }
         }
 
+        //[HttpPut("{id}")]
+        //[ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
+        //public async Task<IActionResult> Update(String id, [FromBody] UpdateTaskCommand command)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    try
+        //    {
+        //        var result = await _taskService.UpdateTaskCommandHandler(command);
+
+        //        return Ok(result);
+        //    }
+        //    catch (NotFoundException<Guid>)
+        //    {
+        //        return NotFound();
+        //    }
+        //}
+
+        //[HttpPut]
+        //[ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
+        //public async Task<IActionResult> Update(UpdateTaskCommand command)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    try
+        //    {
+        //        var result = await _taskService.UpdateTaskCommandHandler(command);
+
+        //        return Ok(result);
+        //    }
+        //    catch (NotFoundException<Guid>)
+        //    {
+        //        return NotFound();
+        //    }
+        //}
     }
 }

@@ -20,12 +20,13 @@ namespace WebClient.Services
         }
 
         public async Task<CreateTaskCommandResult> Create(CreateTaskCommand command)
-        {            
+        {
             return await _httpClient.PostJsonAsync<CreateTaskCommandResult>("tasks", command);
         }
         public async Task<UpdateTaskCommandResult> Update(UpdateTaskCommand command)
         {
-            return await _httpClient.PutJsonAsync<UpdateTaskCommandResult>($"tasks/{command.Id}", command);
+            Guid id = command.Id;
+            return await _httpClient.PutJsonAsync<UpdateTaskCommandResult>($"tasks/{id}", command);
         }
         public async Task<GetAllTasksQueryResult> GetAllTasks()
         {

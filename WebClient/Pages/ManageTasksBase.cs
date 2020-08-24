@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using FamilyTask.Shared.Components;
+using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace WebClient.Pages
         protected bool showLister;
         protected bool showCreator;
         protected string taskstring = string.Empty;
+
+        TaskModel taskModel1 = new TaskModel();
 
         //protected readonly IMapper _mapper;
         //public ManageTasksBase(IMapper mapper)
@@ -124,6 +127,23 @@ namespace WebClient.Pages
             isLoaded = true;
         }
 
+        protected async Task completeTask()
+        {
+            var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
+            {
+
+            });
+            //if (result == null) { }
+            //var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
+            //{
+            //    Id = task.id,
+            //    IsComplete = true,
+            //    AssignedToId = task.assignedToId.Value,
+            //    Subject = task.text
+            //});
+            //if (result == null) { }
+        }
+
         protected void onAddItem()
         {
             showLister = false;
@@ -165,7 +185,6 @@ namespace WebClient.Pages
                 }
             }
         }
-
         protected void onItemClick(object sender, object e)
         {
             Guid val = (Guid)e.GetType().GetProperty("referenceId").GetValue(e);
@@ -195,6 +214,25 @@ namespace WebClient.Pages
             showCreator = false;
             makeMenuItemActive(e);
             StateHasChanged();
+        }
+
+        public void onDrag(TaskModel e)
+        {
+            taskModel1 = e;
+        }
+
+        public async Task onDrop(MenuItem menuItem)
+        {
+            if ((menuItem.referenceId != null || menuItem.referenceId != Guid.Empty) && !taskModel1.isDone)
+            {
+                var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
+                {
+                    Id = taskModel1.id,
+                    Subject = taskModel1.text,
+                    IsComplete = taskModel1.isDone,
+                    AssignedToId = menuItem.referenceId
+                });
+            }
         }
 
         protected void makeMenuItemActive(object e)
