@@ -11,6 +11,6 @@ namespace Domain.DataModels
         public string Subject { get; set; }
         public Boolean IsComplete { get; set; }
         public Guid? AssignedToId { get; set; }
-        public Member Members { get; set; }
+        public virtual Member Members { get; set; }
     }
 }

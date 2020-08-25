@@ -47,13 +47,21 @@ namespace WebApi.Controllers
         [ProducesResponseType(typeof(GetAllTasksQueryResult), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _taskService.GetAllTaskQueryHandler();
-
-            return Ok(result);
+            try
+            {
+                var result = await _taskService.GetAllTaskQueryHandler();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
-        [HttpPut("{id}")]
+
+        [Route("UpdateTask")]
+        [HttpPost]
         [ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Update([FromRoute]Guid id, [FromBody] UpdateTaskCommand command)
+        public async Task<IActionResult> Update(UpdateTaskCommand command)
         {
             if (!ModelState.IsValid)
             {
@@ -63,7 +71,6 @@ namespace WebApi.Controllers
             try
             {
                 var result = await _taskService.UpdateTaskCommandHandler(command);
-
                 return Ok(result);
             }
             catch (NotFoundException<Guid>)
@@ -71,47 +78,5 @@ namespace WebApi.Controllers
                 return NotFound();
             }
         }
-
-        //[HttpPut("{id}")]
-        //[ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
-        //public async Task<IActionResult> Update(String id, [FromBody] UpdateTaskCommand command)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    try
-        //    {
-        //        var result = await _taskService.UpdateTaskCommandHandler(command);
-
-        //        return Ok(result);
-        //    }
-        //    catch (NotFoundException<Guid>)
-        //    {
-        //        return NotFound();
-        //    }
-        //}
-
-        //[HttpPut]
-        //[ProducesResponseType(typeof(UpdateTaskCommandResult), StatusCodes.Status200OK)]
-        //public async Task<IActionResult> Update(UpdateTaskCommand command)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    try
-        //    {
-        //        var result = await _taskService.UpdateTaskCommandHandler(command);
-
-        //        return Ok(result);
-        //    }
-        //    catch (NotFoundException<Guid>)
-        //    {
-        //        return NotFound();
-        //    }
-        //}
     }
 }

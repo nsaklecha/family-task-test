@@ -9,12 +9,26 @@ using System.Reflection;
 using System.Threading.Tasks;
 using WebClient.Abstractions;
 using WebClient.Services;
-//using AutoMapper;
+using AutoMapper;
+using Domain.ViewModel;
+using Domain.Queries;
+using System.Collections;
 
 namespace WebClient.Pages
 {
     public class ManageTasksBase : ComponentBase
     {
+        public ManageTasksBase()
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<MemberVm, FamilyMember>()
+                .ForMember(dst => dst.avtar, src => src.MapFrom(e => e.Avatar))
+                .ReverseMap();
+            });
+            Mapper = config.CreateMapper();
+        }
+
         protected List<TaskModel> tasks = new List<TaskModel>();
         protected List<FamilyMember> familyMembers = new List<FamilyMember>();
         protected FamilyMember[] members;
@@ -25,22 +39,15 @@ namespace WebClient.Pages
         protected bool showLister;
         protected bool showCreator;
         protected string taskstring = string.Empty;
-
-        TaskModel taskModel1 = new TaskModel();
-
-        //protected readonly IMapper _mapper;
-        //public ManageTasksBase(IMapper mapper)
-        //{
-        //    _mapper = mapper;
-        //}
+        protected static IMapper Mapper { get; private set; }
+        TaskModel dragTaskModel = new TaskModel();
         [Inject]
         public ITaskDataService TaskDataService { get; set; }
         [Inject]
         public IMemberDataService MemberDataService { get; set; }
-
         protected override async Task OnInitializedAsync()
         {
-            //members = await Http.GetFromJsonAsync<FamilyMember[]>("sample-data/family-members.json");
+            #region Members
 
             var memberResult = await MemberDataService.GetAllMembers();
 
@@ -50,57 +57,10 @@ namespace WebClient.Pages
                 {
                     if (item.Id != Guid.Empty)
                     {
-                        familyMembers.Add(new FamilyMember()
-                        {
-                            avtar = item.Avatar,
-                            email = item.Email,
-                            firstname = item.FirstName,
-                            lastname = item.LastName,
-                            role = item.Roles,
-                            id = item.Id
-                        });
+                        familyMembers.Add(Mapper.Map<FamilyMember>(item));
                     }
                 }
             }
-
-            var result = await TaskDataService.GetAllTasks();
-
-            if (result != null && result.Payload != null && result.Payload.Any())
-            {
-                foreach (var item in result.Payload)
-                {
-                    FamilyMember familyMember = new FamilyMember();
-                    TaskModel taskModel = new TaskModel();
-
-                    taskModel.id = item.Id;
-                    taskModel.text = item.Subject;
-                    taskModel.isDone = item.IsComplete;
-                    if (item.Members != null || item.AssignedToId.Value != Guid.Empty)
-                    {
-                        familyMember.id = item.AssignedToId.Value;
-                        familyMember.firstname = item.Members.FirstName;
-                        familyMember.lastname = item.Members.LastName;
-                        familyMember.avtar = item.Members.Avatar;
-                        familyMember.role = item.Members.Roles;
-                        familyMember.email = item.Members.Email;
-                        taskModel.member = familyMember;
-                    }
-                    tasks.Add(taskModel);
-
-                    //tasks.Add(new TaskModel()
-                    //{
-                    //    id = item.Id,
-                    //    text = item.Subject,
-                    //    isDone = item.IsComplete,
-                    //    //member = _mapper.Map<FamilyMember>(item.Members)
-                    //});
-
-                }
-                Console.Write("Task List : {0}", tasks);
-            }
-
-            allTasks = tasks.Cast<TaskModel>().ToArray();
-            Console.Write("allTasks List : {0}", allTasks);
 
             members = familyMembers.Cast<FamilyMember>().ToArray();
 
@@ -123,27 +83,39 @@ namespace WebClient.Pages
                 };
                 leftMenuItem[i].ClickCallback += onItemClick;
             }
+
+            #endregion
+
+            #region Tasks
+
+            allTasks = await GetAllTasks();
+
             showAllTasks(null, leftMenuItem[0]);
+
+            #endregion
+
             isLoaded = true;
         }
 
-        protected async Task completeTask()
+        protected async Task<TaskModel[]> GetAllTasks()
         {
-            var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
+            var result = await TaskDataService.GetAllTasks();
+
+            if (result != null && result.Payload != null && result.Payload.Any())
             {
-
-            });
-            //if (result == null) { }
-            //var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
-            //{
-            //    Id = task.id,
-            //    IsComplete = true,
-            //    AssignedToId = task.assignedToId.Value,
-            //    Subject = task.text
-            //});
-            //if (result == null) { }
+                foreach (var item in result.Payload)
+                {
+                    tasks.Add(new TaskModel()
+                    {
+                        id = item.Id,
+                        text = item.Subject,
+                        isDone = item.IsComplete,
+                        member = Mapper.Map<FamilyMember>(item.Members)
+                    });
+                }
+            }
+            return tasks.Cast<TaskModel>().ToArray();
         }
-
         protected void onAddItem()
         {
             showLister = false;
@@ -151,7 +123,6 @@ namespace WebClient.Pages
             makeMenuItemActive(null);
             StateHasChanged();
         }
-
         protected async Task addTask()
         {
             if (!string.IsNullOrEmpty(taskstring))
@@ -164,7 +135,6 @@ namespace WebClient.Pages
                         memberid = leftMenuItem[i].referenceId;
                     }
                 }
-
                 var result = await TaskDataService.Create(new Domain.Commands.CreateTaskCommand()
                 {
                     IsComplete = false,
@@ -174,14 +144,16 @@ namespace WebClient.Pages
 
                 if (result != null && result.Payload != null && result.Payload.Id != Guid.Empty)
                 {
+                    taskstring = string.Empty;
                     tasks.Add(new TaskModel()
                     {
                         id = result.Payload.Id,
                         text = result.Payload.Subject,
-                        isDone = result.Payload.IsComplete
+                        isDone = result.Payload.IsComplete,
+                        member = Mapper.Map<FamilyMember>(result.Payload.Members)
                     });
-                    showCreator = false;
-                    StateHasChanged();
+                    allTasks = tasks.Cast<TaskModel>().ToArray();
+                    showAllTasks(null, leftMenuItem[0]);
                 }
             }
         }
@@ -215,23 +187,55 @@ namespace WebClient.Pages
             makeMenuItemActive(e);
             StateHasChanged();
         }
-
         public void onDrag(TaskModel e)
         {
-            taskModel1 = e;
+            dragTaskModel = e;
         }
-
         public async Task onDrop(MenuItem menuItem)
         {
-            if ((menuItem.referenceId != null || menuItem.referenceId != Guid.Empty) && !taskModel1.isDone)
+            if ((menuItem.referenceId != null || menuItem.referenceId != Guid.Empty) && !dragTaskModel.isDone)
             {
                 var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
                 {
-                    Id = taskModel1.id,
-                    Subject = taskModel1.text,
-                    IsComplete = taskModel1.isDone,
+                    Id = dragTaskModel.id,
+                    Subject = dragTaskModel.text,
+                    IsComplete = dragTaskModel.isDone,
                     AssignedToId = menuItem.referenceId
                 });
+                if (result.Succeed)
+                {
+                    foreach (var taskList in tasksToShow)
+                    {
+                        if (taskList.id == dragTaskModel.id)
+                        {
+                            taskList.assignedToId = menuItem.referenceId;
+                            taskList.member.avtar = menuItem.iconColor;
+                            taskList.member.id = menuItem.referenceId;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        public async Task onCheckChange(TaskModel taskModel)
+        {
+            var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
+            {
+                Id = taskModel.id,
+                Subject = taskModel.text,
+                IsComplete = !taskModel.isDone,
+                AssignedToId = taskModel.member.id
+            });
+            if (result.Succeed)
+            {
+                foreach (var taskList in tasksToShow)
+                {
+                    if (taskList.id == taskModel.id)
+                    {
+                        taskList.isDone = !taskModel.isDone;
+                        break;
+                    }
+                }
             }
         }
 
@@ -251,80 +255,5 @@ namespace WebClient.Pages
         {
             Console.WriteLine("on member add");
         }
-
-        //protected override async Task OnInitializedAsync()
-        //{
-        //    var result = await TaskDataService.GetAllTasks();
-
-        //    if (result != null && result.Payload != null && result.Payload.Any())
-        //    {                
-        //        foreach (var item in result.Payload)
-        //        {
-        //            tasks.Add(new TaskModel()
-        //            {
-        //               id = item.Id,
-        //               text = item.Subject,
-        //               isDone = item.IsComplete
-        //            });
-        //        }
-        //    }
-
-        //    //for (int i = 0; i < members.Count; i++)
-        //    //{
-        //    //    leftMenuItem.Add(new MenuItem
-        //    //    {
-        //    //        iconColor = members[i].avtar,
-        //    //        label = members[i].firstname,
-        //    //        referenceId = members[i].id
-        //    //    });
-        //    //}
-        //    showCreator = true;
-        //    isLoaded = true;
-        //}
-
-
-
-        //protected void onAddItem()
-        //{
-        //    showCreator = true;
-        //    StateHasChanged();
-        //}
-
-        //protected async Task onMemberAdd(FamilyMember familyMember)
-        //{
-        //   var result = await  MemberDataService.Create(new Domain.Commands.CreateMemberCommand()
-        //    {
-        //        Avatar = familyMember.avtar,
-        //        FirstName = familyMember.firstname,
-        //        LastName = familyMember.lastname,
-        //        Email = familyMember.email,
-        //        Roles = familyMember.role
-        //    });
-
-        //    if (result != null && result.Payload != null && result.Payload.Id != Guid.Empty)
-        //    {
-        //        members.Add(new FamilyMember()
-        //        {
-        //            avtar = result.Payload.Avatar,
-        //            email = result.Payload.Email,
-        //            firstname = result.Payload.FirstName,
-        //            lastname = result.Payload.LastName,
-        //            role = result.Payload.Roles,
-        //            id = result.Payload.Id
-        //        });
-
-        //        leftMenuItem.Add(new MenuItem
-        //        {
-        //            iconColor = result.Payload.Avatar,
-        //            label = result.Payload.FirstName,
-        //            referenceId = result.Payload.Id
-        //        });
-
-
-        //        showCreator = false;
-        //        StateHasChanged();
-        //    }
-        //}
-
     }
 }

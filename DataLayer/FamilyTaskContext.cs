@@ -33,11 +33,6 @@ namespace DataLayer
                  entity.ToTable("Task");
              });
 
-            //modelBuilder.Entity<Student>()
-            //.HasOne<Grade>(s => s.Grade)
-            //.WithMany(g => g.Students)
-            //.HasForeignKey(s => s.CurrentGradeId);
-
             modelBuilder.Entity<Task>()
             .HasOne<Member>(s => s.Members)
             .WithMany(g => g.Tasks)

@@ -17,8 +17,6 @@ namespace DataLayer
             MemberQuery = context.Set<Member>();
         }
 
-       
-
         IMemberRepository IBaseRepository<Guid, Member, IMemberRepository>.NoTrack()
         {
             return base.NoTrack();
@@ -28,7 +26,5 @@ namespace DataLayer
         {
             return base.Reset();
         }
-
-       
     }
 }

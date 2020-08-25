@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+
 namespace DataLayer.Repositories
 {
     public class TaskRepository : BaseRepository<Guid, Task, TaskRepository>, ITaskRepository
@@ -17,9 +18,6 @@ namespace DataLayer.Repositories
             TaskContext = context;
             TaskQuery = context.Set<Task>();
         }
-
-
-
         ITaskRepository IBaseRepository<Guid, Task, ITaskRepository>.NoTrack()
         {
             return base.NoTrack();
@@ -27,9 +25,21 @@ namespace DataLayer.Repositories
 
         ITaskRepository IBaseRepository<Guid, Task, ITaskRepository>.Reset()
         {
-            TaskQuery = TaskContext.Tasks.Include("Members").AsQueryable();
-            return this as ITaskRepository;
+            return base.Reset();
         }
 
+        async System.Threading.Tasks.Task<IEnumerable<Domain.DataModels.Task>> IBaseRepository<Guid, Task, ITaskRepository>.ToListAsync(System.Threading.CancellationToken cancellationToken = default)
+        {
+            return await TaskQuery.Include("Members").ToListAsync(cancellationToken);
+        }
+
+        async System.Threading.Tasks.Task<Domain.DataModels.Task> IBaseRepository<Guid, Task, ITaskRepository>.CreateRecordAsync(Domain.DataModels.Task record, System.Threading.CancellationToken cancellationToken = default)
+        {
+            var result = await TaskContext.AddAsync(record, cancellationToken);
+            await TaskContext.SaveChangesAsync(cancellationToken);
+            var entity = result.Entity;
+            var task = await TaskContext.Tasks.Include("Members").SingleOrDefaultAsync(x => x.Id == entity.Id);
+            return task;
+        }
     }
 }

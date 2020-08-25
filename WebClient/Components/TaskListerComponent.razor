@@ -1,6 +1,5 @@
 
 @namespace FamilyTask.Components
-@inject WebClient.Abstractions.ITaskDataService TaskDataService
 
 <style>
     .task-wrapper .task-item {
@@ -50,12 +49,10 @@
     {
         <div class="task-item p-3 my-3 row m-0" draggable="true" @ondragleave="@(()=>OnDrag.InvokeAsync(item))">
             <div class="col-10 p-0">
-                <Check TValue="bool" Checked="@item.isDone" CheckedChanged="@(val => item.isDone = val)">
+ 
+                <Check TValue="bool" Checked="@item.isDone" CheckedChanged="@(()=> OnCheckChange.InvokeAsync(item))">
                     <span class="@(item.isDone ? "done-text" : "")">@item.text</span>
                 </Check>
-                @*<Check TValue="bool" Checked="@item.isDone" CheckedChanged="@completeTask">
-                        <span class="@(item.isDone ? "done-text" : "")">@item.text</span>
-                    </Check>*@
             </div>
             <div class="col-2 p-0 d-flex justify-content-end align-items-center">
                 @if (item.member != null)
@@ -68,44 +65,10 @@
     }
 </div>
 
-
-@*<div dropzone="move" @ondrop="OnDrop" ondragover="event.preventDefault();" style="background-color:green;color:white;width:200px;height:200px;">
-        and drop me here
-    </div>*@
-
 @code  {
-    //public string DragState = "waiting...";
 
     [Parameter] public TaskModel[] Tasks { get; set; }
-
-    private void updateTaskStatus()
-    {
-        Console.WriteLine("checkbox");
-    }
-
     [Parameter] public EventCallback<TaskModel> OnDrag { get; set; }
-
-    //protected async Task completeTask(TaskModel task)
-    //{
-    //    var result = await TaskDataService.Update(new Domain.Commands.UpdateTaskCommand()
-    //    {
-    //        Id = task.id,
-    //        IsComplete = true,
-    //        AssignedToId = task.assignedToId.Value,
-    //        Subject = task.text
-    //    });
-    //    if (result == null) { }
-    //}
-
-    public void OnDragStart(DragEventArgs dragEventArgs, TaskModel taskModel)
-    {
-
-
-    }
-
-    //public void OnDrop(DragEventArgs dragEventArgs)
-    //{
-    //    DragState = "item dropped";
-    //}
+    [Parameter] public EventCallback<TaskModel> OnCheckChange { get; set; }
 
 }

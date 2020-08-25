@@ -23,6 +23,7 @@ namespace DataLayer
     {
         protected readonly DbContext Context;
         protected IQueryable<TEntity> Query;
+        protected IEnumerable<TEntity> List;
 
         protected BaseRepository(DbContext context)
         {
@@ -121,8 +122,6 @@ namespace DataLayer
             Query = Context.Set<TEntity>().AsQueryable();
             return this as TRepository;
         }
-
-
         public virtual async Task<TEntity> SelectFirstOrDefaultAsync(CancellationToken cancellationToken = default)
         {
             return await Query.FirstOrDefaultAsync(cancellationToken);

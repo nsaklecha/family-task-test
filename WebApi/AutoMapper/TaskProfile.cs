@@ -14,7 +14,7 @@ namespace WebApi.AutoMapper
         public TaskProfile()
         {
             CreateMap<CreateTaskCommand, Domain.DataModels.Task>();
-            CreateMap<UpdateMemberCommand, Domain.DataModels.Task>();
+            CreateMap<UpdateTaskCommand, Domain.DataModels.Task>();
             CreateMap<Domain.DataModels.Task, TaskVm>();
         }
     }

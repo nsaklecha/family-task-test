@@ -25,8 +25,7 @@ namespace WebClient.Services
         }
         public async Task<UpdateTaskCommandResult> Update(UpdateTaskCommand command)
         {
-            Guid id = command.Id;
-            return await _httpClient.PutJsonAsync<UpdateTaskCommandResult>($"tasks/{id}", command);
+            return await _httpClient.PostJsonAsync<UpdateTaskCommandResult>($"tasks/updatetask", command);
         }
         public async Task<GetAllTasksQueryResult> GetAllTasks()
         {

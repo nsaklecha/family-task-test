@@ -41,7 +41,7 @@ namespace Services
         {
             IEnumerable<TaskVm> vm = new List<TaskVm>();
 
-            var managetask = await _TaskRepository.Reset().ToListAsync();
+            var managetask = await _TaskRepository.ToListAsync(System.Threading.CancellationToken.None);
 
             if (managetask != null && managetask.Any())
                 vm = _mapper.Map<IEnumerable<TaskVm>>(managetask);
@@ -55,11 +55,11 @@ namespace Services
         public async Task<UpdateTaskCommandResult> UpdateTaskCommandHandler(UpdateTaskCommand command)
         {
             var isSucceed = true;
-            var member = await _TaskRepository.ByIdAsync(command.Id);
+            var task = await _TaskRepository.ByIdAsync(command.Id);
+            
+             _mapper.Map<UpdateTaskCommand, Domain.DataModels.Task>(command, task);
 
-            _mapper.Map<UpdateTaskCommand, Domain.DataModels.Task>(command, member);
-
-            var affectedRecordsCount = await _TaskRepository.UpdateRecordAsync(member);
+            var affectedRecordsCount = await _TaskRepository.UpdateRecordAsync(task);
 
             if (affectedRecordsCount < 1)
                 isSucceed = false;
